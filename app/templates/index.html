@@ -1,0 +1,175 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Волшебное Сердце 8 Марта</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            height: 100vh;
+            background: #FFF5E1;
+            position: relative;
+        }
+
+        h3 {
+            font-family: Arial, sans-serif;
+            color: #D81B60;
+            font-size: 20px;
+            transition: opacity 1s ease-in-out;
+        }
+
+        .heart {
+            width: 100px;
+            height: 100px;
+            background-color: red;
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            animation: heartbeat 1s infinite;
+            cursor: pointer;
+            will-change: transform;
+        }
+
+        .heart:before, .heart:after {
+            content: '';
+            width: 100px;
+            height: 100px;
+            background-color: red;
+            border-radius: 50%;
+            position: absolute;
+        }
+
+        .heart:before { top: -50px; left: 0; }
+        .heart:after { left: 50px; top: 0; }
+
+        @keyframes heartbeat {
+            0%, 100% { transform: translate(-50%, -50%) rotate(-45deg) scale(1); }
+            50% { transform: translate(-50%, -50%) rotate(-45deg) scale(1.1); }
+        }
+
+        .message-container {
+            position: absolute;
+            top: 65%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 20px;
+            color: #D81B60;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
+        .line {
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+        }
+
+        .petal {
+            position: absolute;
+            width: 15px;
+            height: 15px;
+            background-image: url("{% static 'img/petal.png' %}");
+            background-size: cover;
+            opacity: 0.8;
+            animation: fall linear infinite;
+        }
+
+        @keyframes fall {
+            0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <h3 id="hint">Кликаем по сердцу пару раз</h3>
+
+    <audio id="bg-music" loop>
+        <source src="{% static 'audio/backgorund.mp3' %}" type="audio/mpeg">
+    </audio>
+
+    <div class="heart" onclick="clickHeart()"></div>
+    <div class="message-container" id="message-container"></div>
+
+    <script>
+        let clickCount = 0;
+        let messages = [
+            "С 8 Марта!",
+            "Пусть этот день будет чудесным!💖",
+            "Вы делаете этот мир лучше! 🌸",
+            "Пусть ваши мечты сбываются! ✨",
+            "Желаю вам счастья, любви и",
+            "весеннего настроения! 💕"
+        ];
+        let currentMessage = 0;
+        let musicStarted = false;
+
+        function clickHeart() {
+            clickCount++;
+            if (!musicStarted) {
+                document.getElementById("bg-music").play();
+                musicStarted = true;
+            }
+
+            // Скрываем подсказку после первого клика
+            document.getElementById("hint").style.opacity = "0";
+
+            if (clickCount >= 3) {
+                explodeHeart();
+            }
+        }
+
+        function explodeHeart() {
+            document.querySelector(".heart").remove();
+            showMessages();
+        }
+
+        function showMessages() {
+            let messageContainer = document.getElementById("message-container");
+
+            function typeMessage(text, i, line) {
+                if (i < text.length) {
+                    line.textContent += text[i];
+                    setTimeout(() => typeMessage(text, i + 1, line), 50);
+                }
+            }
+
+            function showNextMessage() {
+                if (currentMessage < messages.length) {
+                    let newLine = document.createElement("div");
+                    newLine.className = "line";
+                    messageContainer.appendChild(newLine);
+                    setTimeout(() => { newLine.style.opacity = 1; }, 100);
+                    typeMessage(messages[currentMessage], 0, newLine);
+                    currentMessage++;
+                    setTimeout(showNextMessage, 1500);
+                }
+            }
+
+            showNextMessage();
+        }
+
+        function createPetals() {
+            for (let i = 0; i < 20; i++) {
+                let petal = document.createElement("div");
+                petal.className = "petal";
+                petal.style.left = `${Math.random() * 100}vw`;
+                petal.style.top = "-10vh";
+                petal.style.animationDuration = `${4 + Math.random() * 2}s`;
+                document.body.appendChild(petal);
+                setTimeout(() => petal.remove(), 6000);
+            }
+        }
+
+        setInterval(createPetals, 1200);
+    </script>
+</body>
+</html>
